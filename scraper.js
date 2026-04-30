@@ -75,7 +75,7 @@ async function buscarMarketplace(termo, cidade, precoMax) {
     const run = await apify.actor('apify/facebook-marketplace-scraper').call({
       startUrls: [{ url }],
       maxItems: 20,
-    }, { waitSecs: 90, timeoutSecs: 120 });
+    }, { waitSecs: 90 });
 
     const { items } = await apify.dataset(run.defaultDatasetId).listItems();
 
@@ -114,7 +114,7 @@ async function buscarGrupos(termo, cidade) {
     const run = await apify.actor('apify/facebook-posts-scraper').call({
       startUrls: [{ url }],
       maxPosts: 15,
-    }, { waitSecs: 90, timeoutSecs: 120 });
+    }, { waitSecs: 90 });
 
     const { items } = await apify.dataset(run.defaultDatasetId).listItems();
 
