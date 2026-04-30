@@ -28,10 +28,9 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    // ⚠️ Troca pela URL da sua API no Render após o deploy
     const API_URL = window.location.hostname === 'localhost'
       ? 'http://localhost:3000'
-      : 'https://SUA-API.onrender.com';
+      : 'https://buscador-api-l7h5.onrender.com';
 
     function ScoreBadge({ score }) {
       const configs = {
@@ -141,13 +140,28 @@
       const [alertaAtivo, setAlertaAtivo] = useState(false);
       const [salvandoAlerta, setSalvandoAlerta] = useState(false);
       const [tagIndex, setTagIndex]       = useState(0);
+      const [apiStatus, setApiStatus]     = useState('acordando'); // acordando | online | erro
       const inputRef = useRef(null);
 
       const opcoesFontes = ['Marketplace', 'Grupos Públicos', 'Meus Grupos'];
       const tudoSelecionado = fontesAtivas.length === opcoesFontes.length;
-      const podeBuscar = termo.trim().length >= 2 && fontesAtivas.length > 0 && !buscando;
+      const podeBuscar = termo.trim().length >= 2 && fontesAtivas.length > 0 && !buscando && apiStatus === 'online';
 
       const loadingTags = ['Marketplace', 'Grupos Públicos', 'Grupos Privados', 'Filtrando...'];
+
+      // Acorda a API assim que o app abre
+      useEffect(() => {
+        async function acordarAPI() {
+          try {
+            const res = await fetch(`${API_URL}/`);
+            if (res.ok) setApiStatus('online');
+            else setApiStatus('erro');
+          } catch {
+            setApiStatus('erro');
+          }
+        }
+        acordarAPI();
+      }, []);
 
       useEffect(() => {
         if (tela === 'busca' && inputRef.current) inputRef.current.focus();
@@ -298,6 +312,36 @@
                 <div style={{ fontSize:'14px', color:'#6b7280' }}>
                   Buscamos em todos os lugares de uma vez
                 </div>
+
+                {apiStatus === 'acordando' && (
+                  <div style={{
+                    marginTop:'12px', display:'flex', alignItems:'center',
+                    gap:'8px', fontSize:'12px', color:'#f5a623',
+                    background:'#f5a62315', border:'1px solid #f5a62330',
+                    padding:'8px 14px', borderRadius:'10px',
+                    animation:'pulse 1s ease-in-out infinite',
+                  }}>
+                    <span className="spin">⏳</span> Conectando ao servidor...
+                  </div>
+                )}
+                {apiStatus === 'erro' && (
+                  <div style={{
+                    marginTop:'12px', fontSize:'12px', color:'#ef4444',
+                    background:'#ef444415', border:'1px solid #ef444430',
+                    padding:'8px 14px', borderRadius:'10px',
+                  }}>
+                    ⚠️ Servidor offline. Tente recarregar a página.
+                  </div>
+                )}
+                {apiStatus === 'online' && (
+                  <div style={{
+                    marginTop:'12px', fontSize:'12px', color:'#22c55e',
+                    background:'#22c55e15', border:'1px solid #22c55e30',
+                    padding:'8px 14px', borderRadius:'10px',
+                  }}>
+                    ✅ Pronto pra buscar!
+                  </div>
+                )}
               </div>
 
               <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
