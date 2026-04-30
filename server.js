@@ -5,7 +5,14 @@ const { buscarAnuncios } = require('./scraper');
 const { saveAlert, getAlerts, getAllAlerts, deleteAlert } = require('./redis');
 
 const app = express();
-app.use(cors());
+
+// CORS explícito — aceita qualquer origem
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+app.options('*', cors()); // Responde preflight
 app.use(express.json());
 
 // ─── Health check ─────────────────────────────────────────
@@ -18,6 +25,7 @@ app.get('/', (req, res) => {
 // body: { termo, cidade, precoMax, fontes }
 app.post('/api/buscar', async (req, res) => {
   const { termo, cidade, precoMax, fontes } = req.body;
+  console.log('📥 Requisição recebida:', { termo, cidade, precoMax, fontes });
 
   if (!termo || termo.trim().length < 2) {
     return res.status(400).json({ erro: 'Termo de busca inválido' });
